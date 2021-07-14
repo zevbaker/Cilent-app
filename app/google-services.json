@@ -1,0 +1,98 @@
+{
+  "project_info": {
+    "project_number": "785725581880",
+    "firebase_url": "https://fir-app-b3a8f-default-rtdb.firebaseio.com",
+    "project_id": "fir-app-b3a8f",
+    "storage_bucket": "fir-app-b3a8f.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:785725581880:android:5e0d1d65d536ad5c3294cd",
+        "android_client_info": {
+          "package_name": "com.byteme.cilent_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "785725581880-skq27h120s27q4b8qj2aa9idmjpm6htj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAXIJhFDmbygQ2L-WmqlONme9w-96WZq8Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "785725581880-skq27h120s27q4b8qj2aa9idmjpm6htj.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:785725581880:android:5d1e65a3bdacadfb3294cd",
+        "android_client_info": {
+          "package_name": "com.byteme.firebaseapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "785725581880-skq27h120s27q4b8qj2aa9idmjpm6htj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAXIJhFDmbygQ2L-WmqlONme9w-96WZq8Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "785725581880-skq27h120s27q4b8qj2aa9idmjpm6htj.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:785725581880:android:e739a4827ab1ff1e3294cd",
+        "android_client_info": {
+          "package_name": "com.byteme.kotlinchatapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "785725581880-skq27h120s27q4b8qj2aa9idmjpm6htj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAXIJhFDmbygQ2L-WmqlONme9w-96WZq8Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "785725581880-skq27h120s27q4b8qj2aa9idmjpm6htj.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
