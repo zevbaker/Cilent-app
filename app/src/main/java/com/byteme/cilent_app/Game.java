@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.Arrays;
 
 public class Game extends AppCompatActivity implements View.OnClickListener {
 
@@ -29,12 +30,14 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
     TextView selectedCell;
     LinearLayout root;
     Sudoku borad;
+    int[][] IDS;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.game_test);
         root = findViewById(R.id.root);
+
 
         borad = new Sudoku(new int[][]{
                 new int[]{5,3,0,0,7,0,0,0,0},
@@ -47,6 +50,18 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
                 new int[]{0,0,0,4,1,9,0,0,5},
                 new int[]{0,0,0,0,8,0,0,7,9},
         });
+
+        IDS = new int[][]{
+                new int[]{5,3,0,0,7,0,0,0,0},
+                new int[]{6,0,0,1,9,5,0,0,0},
+                new int[]{0,9,8,0,0,0,0,6,0},
+                new int[]{8,0,0,0,6,0,0,0,3},
+                new int[]{4,0,0,8,0,3,0,0,1},
+                new int[]{7,0,0,0,2,0,0,0,6},
+                new int[]{0,6,0,0,0,0,2,8,0},
+                new int[]{0,0,0,4,1,9,0,0,5},
+                new int[]{0,0,0,0,8,0,0,7,9},
+        };
 
 
         //todo tryed to save that data for next time
@@ -86,6 +101,11 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
                 T1.setTag((row+1)+","+(cell+1));
                 T1.setBackground(getDrawable( R.drawable.border));
                 T1.setTextColor(getColor(R.color.cell_Text_color));
+
+
+                int Tid = View.generateViewId();
+                IDS[row][cell] = Tid;
+                T1.setId(Tid);
 
                 if(borad.getBoard()[row][cell] != 0){
                     T1.setText(borad.getBoard()[row][cell]+"");
@@ -140,40 +160,7 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
                 ((LinearLayout)findViewById(id)).addView(T1);
             }
         }
-//        Board = new TextView[][]{
-//                new TextView[]{findViewById(R.id.row1cell1),findViewById(R.id.row1cell2),findViewById(R.id.row1cell3),findViewById(R.id.row1cell4),findViewById(R.id.row1cell5),findViewById(R.id.row1cell6),findViewById(R.id.row1cell7),findViewById(R.id.row1cell8),findViewById(R.id.row1cell9)},
-//                new TextView[]{findViewById(R.id.row2cell1),findViewById(R.id.row2cell2),findViewById(R.id.row2cell3),findViewById(R.id.row2cell4),findViewById(R.id.row2cell5),findViewById(R.id.row2cell6),findViewById(R.id.row2cell7),findViewById(R.id.row2cell8),findViewById(R.id.row2cell9)},
-//                new TextView[]{findViewById(R.id.row3cell1),findViewById(R.id.row3cell2),findViewById(R.id.row3cell3),findViewById(R.id.row3cell4),findViewById(R.id.row3cell5),findViewById(R.id.row3cell6),findViewById(R.id.row3cell7),findViewById(R.id.row3cell8),findViewById(R.id.row3cell9)},
-//                new TextView[]{findViewById(R.id.row4cell1),findViewById(R.id.row4cell2),findViewById(R.id.row4cell3),findViewById(R.id.row4cell4),findViewById(R.id.row4cell5),findViewById(R.id.row4cell6),findViewById(R.id.row4cell7),findViewById(R.id.row4cell8),findViewById(R.id.row4cell9)},
-//                new TextView[]{findViewById(R.id.row5cell1),findViewById(R.id.row5cell2),findViewById(R.id.row5cell3),findViewById(R.id.row5cell4),findViewById(R.id.row5cell5),findViewById(R.id.row5cell6),findViewById(R.id.row5cell7),findViewById(R.id.row5cell8),findViewById(R.id.row5cell9)},
-//                new TextView[]{findViewById(R.id.row6cell1),findViewById(R.id.row6cell2),findViewById(R.id.row6cell3),findViewById(R.id.row6cell4),findViewById(R.id.row6cell5),findViewById(R.id.row6cell6),findViewById(R.id.row6cell7),findViewById(R.id.row6cell8),findViewById(R.id.row6cell9)},
-//                new TextView[]{findViewById(R.id.row7cell1),findViewById(R.id.row7cell2),findViewById(R.id.row7cell3),findViewById(R.id.row7cell4),findViewById(R.id.row7cell5),findViewById(R.id.row7cell6),findViewById(R.id.row7cell7),findViewById(R.id.row7cell8),findViewById(R.id.row7cell9)},
-//                new TextView[]{findViewById(R.id.row8cell1),findViewById(R.id.row8cell2),findViewById(R.id.row8cell3),findViewById(R.id.row8cell4),findViewById(R.id.row8cell5),findViewById(R.id.row8cell6),findViewById(R.id.row8cell7),findViewById(R.id.row8cell8),findViewById(R.id.row8cell9)},
-//                new TextView[]{findViewById(R.id.row9cell1),findViewById(R.id.row9cell2),findViewById(R.id.row9cell3),findViewById(R.id.row9cell4),findViewById(R.id.row9cell5),findViewById(R.id.row9cell6),findViewById(R.id.row9cell7),findViewById(R.id.row9cell8),findViewById(R.id.row9cell9)},
-//        };
-//
-//        buttons = new Button[]{
-//                findViewById(R.id.button1),
-//                findViewById(R.id.button2),
-//                findViewById(R.id.button3),
-//                findViewById(R.id.button4),
-//                findViewById(R.id.button5),
-//                findViewById(R.id.button6),
-//                findViewById(R.id.button7),
-//                findViewById(R.id.button8),
-//                findViewById(R.id.button9),
-//                findViewById(R.id.del),
-//        };
-//
-//        for (TextView[] row: Board) {
-//            for (TextView cell: row){
-//                cell.setOnClickListener(this);
-//            }
-//        }
-//
-//        for (Button btn: buttons){
-//            btn.setOnClickListener(this);
-//        }
+
     }
 
     @Override
@@ -205,6 +192,7 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
             if (selectedBtn != null){
                 if (selectedBtn.getText().toString().equals(((Button)(findViewById(R.id.del))).getText().toString())){
                     selectedCell.setText("");
+                    updateBoard(selectedCell.getTag().toString(),"0");
 	            }else{
                     selectedCell.setText(selectedBtn.getText());
                     if (selectedBtn != null){
@@ -243,13 +231,28 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
                     toServer.writeObject(command);
                     toServer.writeObject(borad.send());
 
-                    if (fromServer.readObject().getClass() == Boolean.class && (Boolean)fromServer.readObject()) {
-                        //todo end game
-                        Toast.makeText(Game.this, "End of game !", Toast.LENGTH_SHORT).show();
-                    }else{
-                        Boolean[][] ck = (Boolean[][])fromServer.readObject();
+
+                    String ResultCommand = (String)fromServer.readObject();
+                    switch (ResultCommand){
+                        case "index":{
+                            String[] resIndexs = (String[])fromServer.readObject();
+                            Index[] Indexs = new Index[resIndexs.length];
+                            for (int i = 0; i < resIndexs.length;i++){
+                                Indexs[i] = Index.GetInstance(resIndexs[i]);
+                            }
+
+                            upErrorsOnBoard(Indexs);
+                            Log.d(TAG, "run: "+ Arrays.toString(Indexs));
+                            break;
+                        }
+                        case "EndGame":{
+                            Toast.makeText(Game.this, "End of game !", Toast.LENGTH_SHORT).show();
+                            break;
+                        }
+
                     }
 
+                    stopServer(socket,toServer,fromServer);
 
                 } catch (IOException | ClassNotFoundException e) {
                     e.printStackTrace();
@@ -258,6 +261,27 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
         });
 
         thread.start();
+    }
+
+    private void stopServer(Socket socket, ObjectOutputStream toServer, ObjectInputStream fromServer) throws IOException {
+        toServer.writeObject("stop");
+        fromServer.close();
+        toServer.close();
+        socket.close();
+    }
+
+    private void upErrorsOnBoard(Index[] indexs) {
+        for (int[] row:IDS) {
+            for (int cell:row){
+                TextView t = findViewById(cell);
+                t.setTextColor(getColor(R.color.white));
+            }
+        }
+
+        for (Index in:indexs) {
+            TextView t = findViewById(IDS[in.getRow()-1][in.getCell()-1]);
+            t.setTextColor(getColor(R.color.Red));
+        }
     }
 
 
