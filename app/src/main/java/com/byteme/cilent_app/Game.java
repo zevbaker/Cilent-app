@@ -322,7 +322,13 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
             TextView cell = (TextView)v;
 
             if (selectedCell!= null){
-                selectedCell.setBackground(getDrawable( R.drawable.border));
+                int row = Integer.parseInt(selectedCell.getTag().toString().charAt(0)+"")-1;
+                int col = Integer.parseInt(selectedCell.getTag().toString().charAt(2)+"")-1;
+                if(row/3==col/3 || (row/3==2 && col/3==0) || (col/3==2 && row/3==0))
+                    selectedCell.setBackground(getDrawable( R.drawable.border));
+                else{
+                    selectedCell.setBackground(getDrawable( R.drawable.border2));
+                }
             }
             selectedCell = cell;
             selectedCell.setBackgroundColor(getColor(R.color.selected_cell_color));

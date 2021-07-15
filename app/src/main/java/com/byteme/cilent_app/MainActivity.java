@@ -155,26 +155,21 @@ public class MainActivity extends AppCompatActivity  implements View.OnClickList
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        // check if the sign-in activity that is now finished was originated by the onCreate method
         if (requestCode == SIGN_IN_REQUEST_ON_CREATE) {
-            // an activity was created because the user was not signed in
             if (resultCode == RESULT_OK) {
-                // check if the activity for sign-in was finished successfully
                 checkBoardSaves();
                 toastWithDetails(true);
             } else {
-                // either sign-in or sign-up failed (SignInActivity using signInIntent)
+
                 toastWithDetails(false);
-                // only registered users can message each other.
-                // terminate the application
-                finish(); // close MainActivity
+
+                finish();
             }
 
         }else if (requestCode == Sudoku_End_GAME){
             if (resultCode == RESULT_OK) {
                 NewGame.setText("congrats");
-            } else {
-                //TODO game did not end give opson to resume
+                loadGame.setVisibility(View.GONE);
             }
         }
     }
