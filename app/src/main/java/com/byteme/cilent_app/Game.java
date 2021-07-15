@@ -33,21 +33,20 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.Set;
 
 public class Game extends AppCompatActivity implements View.OnClickListener {
 
     private static final String TAG = Game.class.getSimpleName().toString();
-    DatabaseReference firebaseDatabase;
-    Button selectedBtn;
-    TextView selectedCell;
-    LinearLayout root;
-    boolean hasError = false;
-    int[][] IDS;
+    private DatabaseReference firebaseDatabase;
+    private Button selectedBtn;
+    private TextView selectedCell;
+    private LinearLayout root;
+    private boolean hasError = false;
+    private int[][] IDS;
     private GameSave game;
-    Boolean newgame;
+    private Boolean newGame;
 
-    String generateBoard;
+    private String generateBoard;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,11 +61,11 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
         String difficulty="";
         Bundle extras = getIntent().getExtras();
         if(extras != null) {
-            newgame = extras.getBoolean(MainActivity.newGameTag);
+            newGame = extras.getBoolean(MainActivity.newGameTag);
             difficulty = extras.getString(MainActivity.difficultyTag);
         }
 
-        if (newgame){
+        if (newGame){
             makeNewGame(difficulty);
         }else{
             getGameState();
@@ -74,6 +73,94 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
 
     }
 
+    private void makeNewGame(String difficulty) {
+        if(GenerateBoard(difficulty)){
+            game.setStartingBoard(Sudoku.GetInstance(generateBoard));
+        }
+
+        FirebaseDatabase.getInstance().getReference().child("Users").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child(MainActivity.startingGameTAG).setValue(game.getStartingBoard().send()).addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+                if (task.isSuccessful()) {
+                    Toast.makeText(Game.this, "Saved Starting game", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(Game.this, "failed to save", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        game.setCurrentBoard(game.getStartingBoard());
+        setupBoard();
+    }
+
+    private boolean GenerateBoard(String difficulty){
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+                try {
+                    Socket socket = new Socket("10.0.2.2",8010);
+                    ObjectOutputStream toServer =new ObjectOutputStream(socket.getOutputStream());
+                    ObjectInputStream fromServer =new ObjectInputStream(socket.getInputStream());
+
+                    toServer.writeObject("Generate");
+                    toServer.writeObject(difficulty);
+
+                    generateBoard = (String)fromServer.readObject();
+
+                    stopServer(socket,toServer,fromServer);
+
+                } catch (IOException | ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        thread.start();
+        try {
+            thread.join();
+            return true;
+        }catch(InterruptedException e){
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    private void getGameState() {
+        final String[] startingGame = new String[1];
+        final String[] currentGame = new String[1];
+
+        firebaseDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
+
+        firebaseDatabase.child(MainActivity.startingGameTAG).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+                startingGame[0] = snapshot.getValue(String.class);
+                firebaseDatabase.child(MainActivity.currentGameTAG).addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+                        currentGame[0] = snapshot.getValue(String.class);
+
+                        game = new GameSave(Sudoku.GetInstance(startingGame[0]),Sudoku.GetInstance(currentGame[0]));
+                        setupBoard();
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull @NotNull DatabaseError error) {
+                        System.out.println("The read failed: " + error.getCode());
+                    }
+                });
+            }
+
+            @Override
+            public void onCancelled(@NonNull @NotNull DatabaseError error) {
+                System.out.println("The read failed: " + error.getCode());
+            }
+        });
+
+
+
+    }
 
     private void setupBoard() {
 
@@ -182,125 +269,92 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
             }
         }
 
-//        updateBoardToCurrentState(game.getCurrentBoard());
-
     }
 
-    private void makeNewGame(String difficulty) {
-        if(GenerateBoard(difficulty)){
-            game.setStartingBoard(Sudoku.GetInstance(generateBoard));
+    private void updateBoard(String selectedCellTag, String val) {
+        int row = Integer.parseInt(selectedCellTag.charAt(0)+"");
+        int cell = Integer.parseInt(selectedCellTag.charAt(2)+"");
+        game.getCurrentBoard().updateBoard(row-1,cell-1,Integer.parseInt(val));
+
+        SendToServer("Ck", game.getCurrentBoard());
+    }
+
+    public void SendToServer(final String command,final Sudoku board){
+
+        final Handler handler = new Handler();
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+                try {
+                    Socket socket = new Socket("10.0.2.2",8010);
+                    ObjectOutputStream toServer =new ObjectOutputStream(socket.getOutputStream());
+                    ObjectInputStream fromServer =new ObjectInputStream(socket.getInputStream());
+
+                    toServer.writeObject(command);
+                    toServer.writeObject(board.send());
+
+                    String ResultCommand = (String)fromServer.readObject();
+                    switch (ResultCommand){
+                        case "index":{
+                            String[] resIndexs = (String[])fromServer.readObject();
+                            Index[] Indexs = new Index[resIndexs.length];
+                            for (int i = 0; i < resIndexs.length;i++){
+                                Indexs[i] = Index.GetInstance(resIndexs[i]);
+                            }
+                            updateErrorsOnBoard(Indexs);
+                            hasError = Indexs.length>0;
+                            break;
+                        }
+                        case "EndGame":{
+                            setResult(RESULT_OK);
+                            finish();
+                            break;
+                        }
+
+                    }
+
+                    stopServer(socket,toServer,fromServer);
+
+                } catch (IOException | ClassNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        thread.start();
+    }
+
+    private void updateErrorsOnBoard(Index[] indexs) {
+        for (int[] row:IDS) {
+            for (int cell:row){
+                TextView t = findViewById(cell);
+                t.setTextColor(getColor(R.color.white));
+            }
         }
 
+        for (Index in:indexs) {
+            TextView t = findViewById(IDS[in.getRow()-1][in.getCell()-1]);
+            t.setTextColor(getColor(R.color.Red));
+        }
+    }
 
-
-//        game.setStartingBoard( new Sudoku(new int[][]{
-//                new int[]{5,3,0,0,7,0,0,0,0},
-//                new int[]{6,0,0,1,9,5,0,0,0},
-//                new int[]{0,9,8,0,0,0,0,6,0},
-//                new int[]{8,0,0,0,6,0,0,0,3},
-//                new int[]{4,0,0,8,0,3,0,0,1},
-//                new int[]{7,0,0,0,2,0,0,0,6},
-//                new int[]{0,6,0,0,0,0,2,8,0},
-//                new int[]{0,0,0,4,1,9,0,0,5},
-//                new int[]{0,0,0,0,8,0,0,7,9},
-//        }));
-
-
-        FirebaseDatabase.getInstance().getReference().child("Users").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child(MainActivity.startingGameTAG).setValue(game.getStartingBoard().send()).addOnCompleteListener(new OnCompleteListener<Void>() {
+    private void saveGame() {
+        if (hasError == false) {
+            FirebaseDatabase.getInstance().getReference().child("Users").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child(MainActivity.currentGameTAG).setValue(game.getCurrentBoard().send()).addOnCompleteListener(new OnCompleteListener<Void>() {
                 @Override
                 public void onComplete(@NonNull Task<Void> task) {
                     if (task.isSuccessful()) {
-                        Toast.makeText(Game.this, "Saved Starting game", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(Game.this, "Saved", Toast.LENGTH_SHORT).show();
+                        finishAffinity();
                     } else {
                         Toast.makeText(Game.this, "failed to save", Toast.LENGTH_SHORT).show();
                     }
                 }
             });
-
-                //testing end
-//        borad = new Sudoku(new int[][]{
-//                new int[]{5,3,4,6,7,8,9,1,2},
-//                new int[]{6,0,2,1,9,5,3,4,8},
-//                new int[]{1,9,8,3,4,2,5,6,7},
-//                new int[]{8,5,9,7,6,1,4,2,3},
-//                new int[]{4,2,6,8,5,3,7,9,1},
-//                new int[]{7,1,3,9,2,4,8,5,6},
-//                new int[]{9,6,1,5,3,7,2,8,4},
-//                new int[]{2,8,7,4,1,9,6,3,5},
-//                new int[]{3,4,5,2,8,6,1,7,9},
-//        });
-        game.setCurrentBoard(game.getStartingBoard());
-        setupBoard();
-    }
-
-    private boolean GenerateBoard(String difficulty){
-            Thread thread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-
-                    try {
-                        Socket socket = new Socket("10.0.2.2",8010);
-                        ObjectOutputStream toServer =new ObjectOutputStream(socket.getOutputStream());
-                        ObjectInputStream fromServer =new ObjectInputStream(socket.getInputStream());
-
-                        toServer.writeObject("Generate");
-                        toServer.writeObject(difficulty);
-
-                        generateBoard = (String)fromServer.readObject();
-
-                        stopServer(socket,toServer,fromServer);
-
-                    } catch (IOException | ClassNotFoundException e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-
-            thread.start();
-            try {
-                thread.join();
-                return true;
-            }catch(InterruptedException e){
-                e.printStackTrace();
-            }
-        return false;
-    }
-
-
-    private void getGameState() {
-        final String[] startingGame = new String[1];
-        final String[] currentGame = new String[1];
-
-        firebaseDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
-
-        firebaseDatabase.child(MainActivity.startingGameTAG).addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
-                 startingGame[0] = snapshot.getValue(String.class);
-                firebaseDatabase.child(MainActivity.currentGameTAG).addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
-                        currentGame[0] = snapshot.getValue(String.class);
-
-                        game = new GameSave(Sudoku.GetInstance(startingGame[0]),Sudoku.GetInstance(currentGame[0]));
-                        setupBoard();
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull @NotNull DatabaseError error) {
-                        System.out.println("The read failed: " + error.getCode());
-                    }
-                });
-            }
-
-            @Override
-            public void onCancelled(@NonNull @NotNull DatabaseError error) {
-                System.out.println("The read failed: " + error.getCode());
-            }
-        });
-
-
-
+        }else {
+            Toast.makeText(Game.this, "you have an error cant save", Toast.LENGTH_SHORT).show();
+        }
     }
 
     @SuppressLint("UseCompatLoadingForDrawables")
@@ -337,7 +391,7 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
                 if (selectedBtn.getText().toString().equals(((Button)(findViewById(R.id.del))).getText().toString())){
                     selectedCell.setText("");
                     updateBoard(selectedCell.getTag().toString(),"0");
-	            }else{
+                }else{
                     selectedCell.setText(selectedBtn.getText());
                     if (selectedBtn != null){
                         updateBoard(selectedCell.getTag().toString(),selectedBtn.getText().toString());
@@ -351,80 +405,11 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
 
     }
 
-    private void updateBoard(String selectedCellTag, String val) {
-        int row = Integer.parseInt(selectedCellTag.charAt(0)+"");
-        int cell = Integer.parseInt(selectedCellTag.charAt(2)+"");
-        game.getCurrentBoard().updateBoard(row-1,cell-1,Integer.parseInt(val));
-
-        SendToServer("Ck", game.getCurrentBoard());
-    }
-
-
-    public void SendToServer(final String command,final Sudoku borad){
-
-        final Handler handler = new Handler();
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-
-                try {
-                    Socket socket = new Socket("10.0.2.2",8010);
-                    ObjectOutputStream toServer =new ObjectOutputStream(socket.getOutputStream());
-                    ObjectInputStream fromServer =new ObjectInputStream(socket.getInputStream());
-
-                    toServer.writeObject(command);
-                    toServer.writeObject(borad.send());
-
-                    String ResultCommand = (String)fromServer.readObject();
-                    switch (ResultCommand){
-                        case "index":{
-                            String[] resIndexs = (String[])fromServer.readObject();
-                            Index[] Indexs = new Index[resIndexs.length];
-                            for (int i = 0; i < resIndexs.length;i++){
-                                Indexs[i] = Index.GetInstance(resIndexs[i]);
-                            }
-                            updateErrorsOnBoard(Indexs);
-                            hasError = Indexs.length>0;
-                            break;
-                        }
-                        case "EndGame":{
-                            setResult(RESULT_OK);
-                            finish();
-                            break;
-                        }
-
-                    }
-
-                    stopServer(socket,toServer,fromServer);
-
-                } catch (IOException | ClassNotFoundException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-
-        thread.start();
-    }
-
     private void stopServer(Socket socket, ObjectOutputStream toServer, ObjectInputStream fromServer) throws IOException {
         toServer.writeObject("stop");
         fromServer.close();
         toServer.close();
         socket.close();
-    }
-
-    private void updateErrorsOnBoard(Index[] indexs) {
-        for (int[] row:IDS) {
-            for (int cell:row){
-                TextView t = findViewById(cell);
-                t.setTextColor(getColor(R.color.white));
-            }
-        }
-
-        for (Index in:indexs) {
-            TextView t = findViewById(IDS[in.getRow()-1][in.getCell()-1]);
-            t.setTextColor(getColor(R.color.Red));
-        }
     }
 
     @Override
@@ -439,27 +424,4 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
         return super.onOptionsItemSelected(item);
     }
 
-    private void saveGame() {
-        if (hasError == false) {
-            FirebaseDatabase.getInstance().getReference().child("Users").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child(MainActivity.currentGameTAG).setValue(game.getCurrentBoard().send()).addOnCompleteListener(new OnCompleteListener<Void>() {
-                @Override
-                public void onComplete(@NonNull Task<Void> task) {
-                    if (task.isSuccessful()) {
-                        Toast.makeText(Game.this, "Saved", Toast.LENGTH_SHORT).show();
-                        finishAffinity();
-                    } else {
-                        Toast.makeText(Game.this, "failed to save", Toast.LENGTH_SHORT).show();
-                    }
-                }
-            });
-        }else {
-            Toast.makeText(Game.this, "you have an error cant save", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-
-    /*
-                    checkBoardSaves();
-
-     */
 }

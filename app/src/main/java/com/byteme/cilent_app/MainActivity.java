@@ -39,6 +39,7 @@ public class MainActivity extends AppCompatActivity  implements View.OnClickList
     public static final String currentGameTAG = "currentGame";
     public static final String newGameTag = "newGame";
     public static final String difficultyTag = "difficulty";
+
     private static final int SIGN_IN_REQUEST_ON_CREATE = 1;
     private static final int Sudoku_End_GAME = 4;
     private DatabaseReference firebaseDatabase;
@@ -47,7 +48,6 @@ public class MainActivity extends AppCompatActivity  implements View.OnClickList
     private Button loadGame;
     private Button NewGame;
 
-    private String startingGame;
     private String currentGame;
 
     @Override
@@ -60,7 +60,6 @@ public class MainActivity extends AppCompatActivity  implements View.OnClickList
         loadGame.setOnClickListener(this);
         Spinner spinner = (Spinner) findViewById(R.id.spinner);
         spinner.setOnItemSelectedListener(this);
-        //------------------------------------
 
         if (FirebaseAuth.getInstance().getCurrentUser() == null) {
 
@@ -77,7 +76,6 @@ public class MainActivity extends AppCompatActivity  implements View.OnClickList
             checkBoardSaves();
             toastWithDetails(true);
         }
-
 
     }
 
@@ -99,10 +97,7 @@ public class MainActivity extends AppCompatActivity  implements View.OnClickList
             }
         });
 
-
     }
-
-
 
     @Override
     public void onClick(View v) {
@@ -122,18 +117,6 @@ public class MainActivity extends AppCompatActivity  implements View.OnClickList
                 startActivityForResult(i,Sudoku_End_GAME);
                 break;
         }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.sign_out,menu);
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        SignOut();
-        return super.onOptionsItemSelected(item);
     }
 
     private void SignOut() {
@@ -183,4 +166,17 @@ public class MainActivity extends AppCompatActivity  implements View.OnClickList
     public void onNothingSelected(AdapterView<?> parent) {
 
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.sign_out,menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        SignOut();
+        return super.onOptionsItemSelected(item);
+    }
+
 }
