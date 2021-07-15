@@ -49,14 +49,12 @@ public class Sudoku implements Serializable {
 
         Boolean[] rows =valid_row(board,duplicatIndexs);
         Boolean[] cells = valid_col(board,duplicatIndexs);
-
-        boolean resRows,resCells;
-        boolean totalBoard = true;
+        Boolean squares = valid_squares(board,duplicatIndexs);
 
         if(duplicatIndexs.size()==0){
             boolean flag = true;
             for (int i = 0; i < rows.length; i++) {
-                if (rows[i] == false || cells[i] == false){
+                if (rows[i] == false || cells[i] == false || squares){
                     flag = false;
                     break;
                 }
@@ -72,6 +70,35 @@ public class Sudoku implements Serializable {
         }
 
         return res;
+    }
+
+    private Boolean valid_squares(int[][] board, ArrayList<Index> res) {
+        Boolean flag = true;
+
+        for (int row = 0; row < 9; row++) {
+            for (int col = 0; col < 9; col++) {
+                HashMap<Integer,Index>set = new HashMap<>();
+                if (board[row][col] != 0){
+                    for (int i = 0; i < 9; i++) {
+                        if(((3 * (row / 3) + i / 3 != row) && (3 * (col / 3) + i % 3!= col)) && board[3 * (row / 3) + i / 3][ 3 * (col / 3) + i % 3] == board[row][col]){
+                            if(!set.containsKey(board[row][col])){
+                                set.put(board[row][col],new Index(row,col));
+                                if (!res.contains(new Index(row,col)))
+                                    res.add(new Index(row+1,col+1));
+                            }
+                            if (!res.contains(new Index(3 * (row / 3) + i / 3,3 * (col / 3) + i % 3)))
+                                res.add(new Index((3 * (row / 3) + i / 3)+1,(3 * (col / 3) + i % 3)+1));
+
+                            flag = false;
+                        }
+                    }
+
+                }else if (flag)
+                    flag = false;
+            }
+
+        }
+        return flag;
     }
 
 
