@@ -52,6 +52,17 @@ public class SudokuIHandler implements IHandler {
                     break;
                 }
 
+                case "Generate":{
+                    String difficulty = objectInputStream.readObject().toString();
+                    System.out.println("server ck got: " + difficulty);
+
+                    Sudoku s = new Sudoku();
+                    s.generateNewBoard(Difficulty.valueOf(difficulty));
+                    objectOutputStream.writeObject(s.send());
+
+                    break;
+                }
+
                 case "stop":{
                     doWork = false;
                     break;

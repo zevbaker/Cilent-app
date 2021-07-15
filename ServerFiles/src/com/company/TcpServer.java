@@ -44,15 +44,7 @@ public class TcpServer {
                         } catch (IOException | ClassNotFoundException ioException) {
                             ioException.printStackTrace();
                         }
-                        // terminate connection with client
-                        // close all streams
-                        // try {
-                        //     serverClientConnection.getInputStream().close();
-                        //     serverClientConnection.getOutputStream().close();
-                        //     serverClientConnection.close();
-                        // } catch (IOException ioException) {
-                        //     ioException.printStackTrace();
-                        // }
+
                     };
                     threadPool.execute(clientHandling);
                 }

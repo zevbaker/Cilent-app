@@ -47,6 +47,8 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
     private GameSave game;
     Boolean newgame;
 
+    String generateBoard;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,14 +59,15 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
     }
 
     private void checkNewGame() {
-        newgame = true;
+        String difficulty="";
         Bundle extras = getIntent().getExtras();
         if(extras != null) {
             newgame = extras.getBoolean(MainActivity.newGameTag);
+            difficulty = extras.getString(MainActivity.difficultyTag);
         }
 
         if (newgame){
-            makeNewGame();
+            makeNewGame(difficulty);
         }else{
             getGameState();
         }
@@ -105,7 +108,11 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
                 T1.setLayoutParams(param1);
 
                 T1.setTag((row+1)+","+(cell+1));
-                T1.setBackground(getDrawable( R.drawable.border));
+                if(row/3==cell/3 || (row/3==2 && cell/3==0) || (cell/3==2 && row/3==0))
+                    T1.setBackground(getDrawable( R.drawable.border));
+                else{
+                    T1.setBackground(getDrawable( R.drawable.border2));
+                }
                 T1.setTextColor(getColor(R.color.cell_Text_color));
 
 
@@ -121,7 +128,9 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
                 }
 
                 if (game.getStartingBoard().getBoard()[row][cell] != game.getCurrentBoard().getBoard()[row][cell]){
-                    T1.setText(game.getCurrentBoard().getBoard()[row][cell]+"");
+                    if(game.getCurrentBoard().getBoard()[row][cell] !=0)
+                        T1.setText(game.getCurrentBoard().getBoard()[row][cell]+"");
+
                     T1.setOnClickListener(this);
                     game.getStartingBoard().getBoard()[row][cell] = game.getCurrentBoard().getBoard()[row][cell];
                 }
@@ -177,18 +186,24 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
 
     }
 
-    private void makeNewGame() {
-        game.setStartingBoard( new Sudoku(new int[][]{
-            new int[]{5,3,0,0,7,0,0,0,0},
-            new int[]{6,0,0,1,9,5,0,0,0},
-            new int[]{0,9,8,0,0,0,0,6,0},
-            new int[]{8,0,0,0,6,0,0,0,3},
-            new int[]{4,0,0,8,0,3,0,0,1},
-            new int[]{7,0,0,0,2,0,0,0,6},
-            new int[]{0,6,0,0,0,0,2,8,0},
-            new int[]{0,0,0,4,1,9,0,0,5},
-            new int[]{0,0,0,0,8,0,0,7,9},
-            }));
+    private void makeNewGame(String difficulty) {
+        if(GenerateBoard(difficulty)){
+            game.setStartingBoard(Sudoku.GetInstance(generateBoard));
+        }
+
+
+
+//        game.setStartingBoard( new Sudoku(new int[][]{
+//                new int[]{5,3,0,0,7,0,0,0,0},
+//                new int[]{6,0,0,1,9,5,0,0,0},
+//                new int[]{0,9,8,0,0,0,0,6,0},
+//                new int[]{8,0,0,0,6,0,0,0,3},
+//                new int[]{4,0,0,8,0,3,0,0,1},
+//                new int[]{7,0,0,0,2,0,0,0,6},
+//                new int[]{0,6,0,0,0,0,2,8,0},
+//                new int[]{0,0,0,4,1,9,0,0,5},
+//                new int[]{0,0,0,0,8,0,0,7,9},
+//        }));
 
 
         FirebaseDatabase.getInstance().getReference().child("Users").child(FirebaseAuth.getInstance().getCurrentUser().getUid()).child(MainActivity.startingGameTAG).setValue(game.getStartingBoard().send()).addOnCompleteListener(new OnCompleteListener<Void>() {
@@ -218,6 +233,38 @@ public class Game extends AppCompatActivity implements View.OnClickListener {
         setupBoard();
     }
 
+    private boolean GenerateBoard(String difficulty){
+            Thread thread = new Thread(new Runnable() {
+                @Override
+                public void run() {
+
+                    try {
+                        Socket socket = new Socket("10.0.2.2",8010);
+                        ObjectOutputStream toServer =new ObjectOutputStream(socket.getOutputStream());
+                        ObjectInputStream fromServer =new ObjectInputStream(socket.getInputStream());
+
+                        toServer.writeObject("Generate");
+                        toServer.writeObject(difficulty);
+
+                        generateBoard = (String)fromServer.readObject();
+
+                        stopServer(socket,toServer,fromServer);
+
+                    } catch (IOException | ClassNotFoundException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+
+            thread.start();
+            try {
+                thread.join();
+                return true;
+            }catch(InterruptedException e){
+                e.printStackTrace();
+            }
+        return false;
+    }
 
 
     private void getGameState() {

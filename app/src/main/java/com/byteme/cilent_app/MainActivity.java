@@ -7,11 +7,13 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 
 import androidx.annotation.Nullable;
 
 import android.content.Intent;
+import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.byteme.cilent_app.models.GameSave;
@@ -30,15 +32,17 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Arrays;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity  implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity  implements View.OnClickListener, AdapterView.OnItemSelectedListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
     public static final String startingGameTAG = "startingGame";
     public static final String currentGameTAG = "currentGame";
     public static final String newGameTag = "newGame";
+    public static final String difficultyTag = "difficulty";
     private static final int SIGN_IN_REQUEST_ON_CREATE = 1;
     private static final int Sudoku_End_GAME = 4;
     private DatabaseReference firebaseDatabase;
+    private String difficulty;
 
     private Button loadGame;
     private Button NewGame;
@@ -50,11 +54,12 @@ public class MainActivity extends AppCompatActivity  implements View.OnClickList
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         loadGame = findViewById(R.id.loadGame);
         NewGame = findViewById(R.id.newGame);
         NewGame.setOnClickListener(this);
         loadGame.setOnClickListener(this);
+        Spinner spinner = (Spinner) findViewById(R.id.spinner);
+        spinner.setOnItemSelectedListener(this);
         //------------------------------------
 
         if (FirebaseAuth.getInstance().getCurrentUser() == null) {
@@ -105,6 +110,7 @@ public class MainActivity extends AppCompatActivity  implements View.OnClickList
         switch (v.getId()) {
             case R.id.newGame:
                 i.putExtra(newGameTag, true);
+                i.putExtra(difficultyTag, difficulty);
                 startActivityForResult(i,Sudoku_End_GAME);
                 break;
             case R.id.loadGame:
@@ -173,4 +179,13 @@ public class MainActivity extends AppCompatActivity  implements View.OnClickList
         }
     }
 
+    @Override
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+        difficulty = parent.getItemAtPosition(position).toString();
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
+
+    }
 }
