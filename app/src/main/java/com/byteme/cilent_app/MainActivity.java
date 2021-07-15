@@ -4,54 +4,57 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
-import android.os.Handler;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 
 import android.content.Intent;
 import android.widget.Toast;
 
+import com.byteme.cilent_app.models.GameSave;
 import com.firebase.ui.auth.AuthUI;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.Socket;
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Arrays;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity  implements View.OnClickListener {
 
     private static final String TAG = MainActivity.class.getSimpleName();
+    public static final String startingGameTAG = "startingGame";
+    public static final String currentGameTAG = "currentGame";
+    public static final String newGameTag = "newGame";
     private static final int SIGN_IN_REQUEST_ON_CREATE = 1;
     private static final int Sudoku_End_GAME = 4;
+    private DatabaseReference firebaseDatabase;
 
-    private Button TestSever;
+    private Button loadGame;
     private Button NewGame;
 
-    private ObjectInputStream fromServer;
-    private ObjectOutputStream toServer;
-
+    private String startingGame;
+    private String currentGame;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //TODO fix
-
-        TestSever = findViewById(R.id.Test);
+        loadGame = findViewById(R.id.loadGame);
         NewGame = findViewById(R.id.newGame);
         NewGame.setOnClickListener(this);
-        TestSever.setOnClickListener(this);
+        loadGame.setOnClickListener(this);
         //------------------------------------
 
         if (FirebaseAuth.getInstance().getCurrentUser() == null) {
@@ -60,25 +63,58 @@ public class MainActivity extends AppCompatActivity  implements View.OnClickList
                     new AuthUI.IdpConfig.EmailBuilder().build());
 
                         Intent signInIntent = AuthUI.getInstance()
-                                .createSignInIntentBuilder()
+                                .createSignInIntentBuilder().setIsSmartLockEnabled(false)
                                 .setAvailableProviders(providers)
                                 .build();
 
             startActivityForResult(signInIntent, SIGN_IN_REQUEST_ON_CREATE);
-
         } else {
+            checkBoardSaves();
             toastWithDetails(true);
         }
+
+
     }
+
+    private void checkBoardSaves() {
+
+        firebaseDatabase = FirebaseDatabase.getInstance().getReference().child("Users").child(FirebaseAuth.getInstance().getCurrentUser().getUid());
+
+        firebaseDatabase.child(currentGameTAG).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull @NotNull DataSnapshot snapshot) {
+                currentGame = snapshot.getValue(String.class);
+                if (currentGame != null)
+                    loadGame.setVisibility(View.VISIBLE);
+            }
+
+            @Override
+            public void onCancelled(@NonNull @NotNull DatabaseError error) {
+                System.out.println("The read failed: " + error.getCode());
+            }
+        });
+
+
+    }
+
+
 
     @Override
     public void onClick(View v) {
+        Intent i =  new Intent(this,Game.class);
         switch (v.getId()) {
-            case R.id.Test:
-                sendMessage();
-                break;
             case R.id.newGame:
-                startActivity(new Intent(this,Game.class));
+                i.putExtra(newGameTag, true);
+                startActivityForResult(i,Sudoku_End_GAME);
+                break;
+            case R.id.loadGame:
+//                checkBoardSaves();
+
+//                i.putExtra(currentGameTAG, currentGame);
+//                i.putExtra(startingGameTAG, startingGame);
+                i.putExtra(newGameTag, false);
+                startActivityForResult(i,Sudoku_End_GAME);
+                break;
         }
     }
 
@@ -110,56 +146,6 @@ public class MainActivity extends AppCompatActivity  implements View.OnClickList
         }
     }
 
-
-    private void sendMessage() {
-
-        final Handler handler = new Handler();
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-
-                try {
-                    Sudoku borad = new Sudoku(new int[][]{
-                            new int[]{1,2,3,4,5,6,7,8,9},
-                            new int[]{1,2,3,4,5,6,7,8,9},
-                            new int[]{1,2,3,4,5,6,7,8,9},
-
-                            new int[]{1,2,3,4,5,6,7,8,9},
-                            new int[]{1,2,3,4,5,6,7,8,9},
-                            new int[]{1,2,3,4,5,6,7,8,9},
-
-                            new int[]{1,2,3,4,5,6,7,8,9},
-                            new int[]{1,2,3,4,5,6,7,8,9},
-                            new int[]{1,2,3,4,5,6,7,8,9},
-                    });
-
-
-                    Socket socket = new Socket("10.0.2.2",8010);
-
-                    toServer =new ObjectOutputStream(socket.getOutputStream());
-                    fromServer =new ObjectInputStream(socket.getInputStream());
-
-                    toServer.writeObject("Ck");
-                    toServer.writeObject(borad.send());
-                    Boolean[][] ck = (Boolean[][])fromServer.readObject();
-                    String res="";
-                    for (int i = 0; i < 9; i++){
-                        for (int j = 0; j < 9; j++){
-                            res +=(ck[i][j]+"|");
-                        }
-                        res+="\n";
-                    }
-                    Log.d(TAG, "doFakeWork: got res of: "+res);
-                } catch (IOException | ClassNotFoundException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-
-        thread.start();
-
-    }
-
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -168,6 +154,7 @@ public class MainActivity extends AppCompatActivity  implements View.OnClickList
             // an activity was created because the user was not signed in
             if (resultCode == RESULT_OK) {
                 // check if the activity for sign-in was finished successfully
+                checkBoardSaves();
                 toastWithDetails(true);
             } else {
                 // either sign-in or sign-up failed (SignInActivity using signInIntent)
@@ -179,7 +166,7 @@ public class MainActivity extends AppCompatActivity  implements View.OnClickList
 
         }else if (requestCode == Sudoku_End_GAME){
             if (resultCode == RESULT_OK) {
-                //TODO ended game and give new one
+                NewGame.setText("congrats");
             } else {
                 //TODO game did not end give opson to resume
             }

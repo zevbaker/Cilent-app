@@ -41,20 +41,13 @@ public class Sudoku implements Serializable {
 
     public String[] checkBoard(){
 
+        ArrayList<Index> duplicatIndexs = new ArrayList<>();
 
-        Boolean[] rows = new Boolean[9];
-        Boolean[] cells = new Boolean[9];
+        Boolean[] rows =valid_row(board,duplicatIndexs);
+        Boolean[] cells = valid_col(board,duplicatIndexs);
 
         boolean resRows,resCells;
         boolean totalBoard = true;
-        ArrayList<Index> duplicatIndexs = new ArrayList<>();
-
-        for (int row = 0; row < 9; row++) {
-            rows[row] = valid_row(row,board,duplicatIndexs);
-        }
-        for (int coll = 0; coll < 9; coll++) {
-            cells[coll] = valid_col(coll,board,duplicatIndexs);
-        }
 
         if(duplicatIndexs.size()==0){
             boolean flag = true;
@@ -78,53 +71,63 @@ public class Sudoku implements Serializable {
     }
 
 
-    public boolean valid_row(int row, int [][] grid,ArrayList<Index> res){
-        int temp[] = grid[row];
-        Boolean flag = true;
-        HashMap<Integer,Index>set = new HashMap<>();
-        for (int i = 0; i < temp.length; i++) {
-            if (temp[i] != 0){
-                if (set.containsKey(temp[i])){
-                    res.add(new Index(row+1,i+1));
+    public Boolean[] valid_row(int [][] grid,ArrayList<Index> res){
+        Boolean[] rows = new Boolean[9];
 
-                    if (!res.contains(set.get(temp[i]))){
-                        res.add(set.get(temp[i]));
+        for (int row = 0; row < 9; row++) {
+            int temp[] = grid[row];
+            Boolean flag = true;
+            HashMap<Integer,Index>set = new HashMap<>();
+            for (int i = 0; i < temp.length; i++) {
+                if (temp[i] != 0){
+                    if (set.containsKey(temp[i])){
+                        res.add(new Index(row+1,i+1));
+
+                        if (!res.contains(set.get(temp[i]))){
+                            res.add(set.get(temp[i]));
+                        }
+                        if (flag)
+                            flag = false;
+                    }else {
+                        set.put(temp[i],new Index(row+1,i+1));
                     }
-                    if (flag)
-                        flag = false;
-                }else {
-                    set.put(temp[i],new Index(row+1,i+1));
-                }
-            }else if (flag)
-                flag = false;
+                }else if (flag)
+                    flag = false;
+            }
+            rows[row] =  flag;
         }
-        return flag;
+
+        return rows;
     }
 
-    public boolean valid_col(int col, int [][] grid,ArrayList<Index> res){
-        Boolean flag = true;
-        HashMap<Integer,Index>set = new HashMap<>();
+    public Boolean[] valid_col( int [][] grid,ArrayList<Index> res){
+        Boolean[] cells = new Boolean[9];
+        for (int col = 0; col < 9; col++) {
 
-        for (int i =0 ; i< 9; i++) {
-            if (grid[i][col] != 0){
-                if (set.containsKey(grid[i][col])){
-                    res.add(new Index(i+1,col+1));
+            Boolean flag = true;
+            HashMap<Integer,Index>set = new HashMap<>();
 
-                    if (!res.contains(set.get(grid[i][col]))){
-                        res.add( set.get(grid[i][col]));
+            for (int i =0 ; i< 9; i++) {
+                if (grid[i][col] != 0){
+                    if (set.containsKey(grid[i][col])){
+                        res.add(new Index(i+1,col+1));
+
+                        if (!res.contains(set.get(grid[i][col]))){
+                            res.add( set.get(grid[i][col]));
+                        }
+
+                        if (flag)
+                            flag = false;
+                    }else {
+                        set.put(grid[i][col],new Index(i+1,col+1));
                     }
+                }else if (flag)
+                    flag = false;
 
-                    if (flag)
-                        flag = false;
-                }else {
-                    set.put(grid[i][col],new Index(i+1,col+1));
-                }
-            }else if (flag)
-                flag = false;
-
+            }
+            cells[col] = flag;
         }
-
-        return flag;
+        return cells;
     }
 
 

@@ -1,4 +1,4 @@
-package com.byteme.cilent_app;
+package com.byteme.cilent_app.models;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

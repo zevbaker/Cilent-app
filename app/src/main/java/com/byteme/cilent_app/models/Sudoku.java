@@ -1,17 +1,16 @@
-package com.byteme.cilent_app;
+package com.byteme.cilent_app.models;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import java.io.Serializable;
 
-
-public class Sudoku implements Serializable {
+public class Sudoku {
     private  int[][] board;
 
     public Sudoku(){
         board = new int[9][9];
     }
+
 
     public Sudoku(int[][] board){
         this.board = board;
@@ -26,7 +25,6 @@ public class Sudoku implements Serializable {
     }
 
     public void updateBoard(int row, int cell,int val) {
-
         this.board[row][cell] = val;
      }
 

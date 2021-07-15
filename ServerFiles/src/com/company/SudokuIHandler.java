@@ -5,10 +5,6 @@ import com.google.gson.*;
 
 import java.util.Random;
 
-
-/**
- * This class handles Matrix-related tasks
- */
 public class SudokuIHandler implements IHandler {
     private volatile boolean doWork = true;
 
@@ -45,7 +41,6 @@ public class SudokuIHandler implements IHandler {
                     System.out.println("server ck got: " + board);
 
                     System.out.println("server cking Sudoku: ");
-                    //todo call ck
 
                     String[] res = board.checkBoard();
                     if(board.isCompleted()){
@@ -57,20 +52,11 @@ public class SudokuIHandler implements IHandler {
                     break;
                 }
 
-
-
                 case "stop":{
                     doWork = false;
                     break;
                 }
             }
         }
-
-
-
-
-
     }
-
-
 }

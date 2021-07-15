@@ -1299,7 +1299,7 @@
                 android:text="1" />
 
             <Button
-                android:id="@+id/Test"
+                android:id="@+id/loadGame"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
                 android:layout_margin="4dp"
