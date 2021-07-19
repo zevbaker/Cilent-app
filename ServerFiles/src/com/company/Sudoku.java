@@ -18,7 +18,7 @@ public class Sudoku implements Serializable {
     boolean completed;
 
     public Sudoku() {
-        board = new int[9][9];
+        board = new int[BOARD_SIZE][BOARD_SIZE];
         completed = false;
     }
 
@@ -45,25 +45,19 @@ public class Sudoku implements Serializable {
 
     public String[] checkBoard(){
 
+
         ArrayList<Index> duplicatIndexs = new ArrayList<>();
 
-        Boolean[] rows =valid_row(board,duplicatIndexs);
-        Boolean[] cells = valid_col(board,duplicatIndexs);
-        Boolean squares = valid_squares(board,duplicatIndexs);
 
-        if(duplicatIndexs.size()==0){
-            boolean flag = true;
-            for (int i = 0; i < rows.length; i++) {
-                if (rows[i] == false || cells[i] == false || squares){
-                    flag = false;
-                    break;
-                }
-            }
-
-            completed = flag;
-        }
+        valid_row(board,duplicatIndexs);
+        valid_col(board,duplicatIndexs);
+        valid_squares(board,duplicatIndexs);
 
         String[] res = new String[duplicatIndexs.size()];
+
+        if(duplicatIndexs.size()==0){
+            completed = check_empty_cells();
+        }
 
         for (int i = 0; i < duplicatIndexs.size(); i++) {
             res[i] = duplicatIndexs.get(i).send();
@@ -72,74 +66,69 @@ public class Sudoku implements Serializable {
         return res;
     }
 
-    private Boolean valid_squares(int[][] board, ArrayList<Index> res) {
-        Boolean flag = true;
+    private boolean check_empty_cells(){
+        for (int row = 0; row < BOARD_SIZE; row++) {
+            for (int cell = 0; cell < BOARD_SIZE; cell++)
+                if (board[row][cell] == NO_VALUE){
+                    return false;
+                }
+        }
+        return true;
+    }
 
-        for (int row = 0; row < 9; row++) {
-            for (int col = 0; col < 9; col++) {
+    private void valid_squares(int[][] board, ArrayList<Index> res) {
+
+        for (int row = 0; row < BOARD_SIZE; row++) {
+            for (int col = 0; col < BOARD_SIZE; col++) {
                 HashMap<Integer,Index>set = new HashMap<>();
-                if (board[row][col] != 0){
-                    for (int i = 0; i < 9; i++) {
-                        if(((3 * (row / 3) + i / 3 != row) && (3 * (col / 3) + i % 3!= col)) && board[3 * (row / 3) + i / 3][ 3 * (col / 3) + i % 3] == board[row][col]){
+                if (board[row][col] != NO_VALUE){
+                    for (int i = 0; i < BOARD_SIZE; i++) {
+                        if(((SUBSECTION_SIZE * (row / SUBSECTION_SIZE) + i / SUBSECTION_SIZE != row) && (SUBSECTION_SIZE * (col / SUBSECTION_SIZE) + i % SUBSECTION_SIZE!= col)) && board[SUBSECTION_SIZE * (row / SUBSECTION_SIZE) + i / SUBSECTION_SIZE][ SUBSECTION_SIZE * (col / SUBSECTION_SIZE) + i % SUBSECTION_SIZE] == board[row][col]){
                             if(!set.containsKey(board[row][col])){
                                 set.put(board[row][col],new Index(row,col));
                                 if (!res.contains(new Index(row,col)))
                                     res.add(new Index(row+1,col+1));
                             }
-                            if (!res.contains(new Index(3 * (row / 3) + i / 3,3 * (col / 3) + i % 3)))
-                                res.add(new Index((3 * (row / 3) + i / 3)+1,(3 * (col / 3) + i % 3)+1));
+                            if (!res.contains(new Index(SUBSECTION_SIZE * (row / SUBSECTION_SIZE) + i / SUBSECTION_SIZE,SUBSECTION_SIZE * (col / SUBSECTION_SIZE) + i % SUBSECTION_SIZE)))
+                                res.add(new Index((SUBSECTION_SIZE * (row / SUBSECTION_SIZE) + i / SUBSECTION_SIZE)+1,(SUBSECTION_SIZE * (col / SUBSECTION_SIZE) + i % SUBSECTION_SIZE)+1));
 
-                            flag = false;
                         }
                     }
 
-                }else if (flag)
-                    flag = false;
+                }
             }
 
         }
-        return flag;
     }
 
+    public void valid_row(int [][] grid,ArrayList<Index> res){
 
-    public Boolean[] valid_row(int [][] grid,ArrayList<Index> res){
-        Boolean[] rows = new Boolean[9];
-
-        for (int row = 0; row < 9; row++) {
+        for (int row = 0; row < BOARD_SIZE; row++) {
             int temp[] = grid[row];
-            Boolean flag = true;
             HashMap<Integer,Index>set = new HashMap<>();
             for (int i = 0; i < temp.length; i++) {
-                if (temp[i] != 0){
+                if (temp[i] != NO_VALUE){
                     if (set.containsKey(temp[i])){
                         res.add(new Index(row+1,i+1));
 
                         if (!res.contains(set.get(temp[i]))){
                             res.add(set.get(temp[i]));
                         }
-                        if (flag)
-                            flag = false;
+
                     }else {
                         set.put(temp[i],new Index(row+1,i+1));
                     }
-                }else if (flag)
-                    flag = false;
+                }
             }
-            rows[row] =  flag;
         }
-
-        return rows;
     }
 
-    public Boolean[] valid_col( int [][] grid,ArrayList<Index> res){
-        Boolean[] cells = new Boolean[9];
-        for (int col = 0; col < 9; col++) {
+    public void valid_col( int [][] grid,ArrayList<Index> res){
 
-            Boolean flag = true;
+        for (int col = 0; col < BOARD_SIZE; col++) {
             HashMap<Integer,Index>set = new HashMap<>();
-
-            for (int i =0 ; i< 9; i++) {
-                if (grid[i][col] != 0){
+            for (int i =0 ; i< BOARD_SIZE; i++) {
+                if (grid[i][col] != NO_VALUE){
                     if (set.containsKey(grid[i][col])){
                         res.add(new Index(i+1,col+1));
 
@@ -147,18 +136,13 @@ public class Sudoku implements Serializable {
                             res.add( set.get(grid[i][col]));
                         }
 
-                        if (flag)
-                            flag = false;
                     }else {
                         set.put(grid[i][col],new Index(i+1,col+1));
                     }
-                }else if (flag)
-                    flag = false;
-
+                }
             }
-            cells[col] = flag;
+
         }
-        return cells;
     }
 
     public String send() {
@@ -178,7 +162,7 @@ public class Sudoku implements Serializable {
 
     public void generateNewBoard(Difficulty difficulty) {
         Random rand = new Random();
-        int[] randRow = new int[9];
+        int[] randRow = new int[BOARD_SIZE];
         ArrayList<Integer> numbers = new ArrayList<>();
         for (int i = 0; i < BOARD_SIZE; i++) {
             numbers.add(i+1);
@@ -188,9 +172,9 @@ public class Sudoku implements Serializable {
             randRow[i] = numbers.remove(rand.nextInt(numbers.size()));
         }
 
-        int randIndex = rand.nextInt(9);
+        int randIndex = rand.nextInt(BOARD_SIZE);
         for (int row = 0; row < BOARD_SIZE; row++) {
-            this.board[row] = new int[9];
+            this.board[row] = new int[BOARD_SIZE];
             this.board[row][randIndex] = randRow[row];
             }
 
@@ -233,13 +217,13 @@ public class Sudoku implements Serializable {
     private void removeNumber( ArrayList<ArrayList<Integer>> boardlist) {
 
         Random rand = new Random();
-        int row = rand.nextInt(9);
+        int row = rand.nextInt(BOARD_SIZE);
         int cell = rand.nextInt(boardlist.get(row).size());
 
-        if (board[row][cell] == 0){
+        if (board[row][cell] == NO_VALUE){
             removeNumber(boardlist);
         }else {
-            board[row][cell] = 0;
+            board[row][cell] = NO_VALUE;
         }
     }
 
@@ -295,11 +279,7 @@ public class Sudoku implements Serializable {
         return true;
     }
 
-    boolean checkConstraint(
-            int[][] board,
-            int row,
-            boolean[] constraint,
-            int column) {
+    boolean checkConstraint(int[][] board,int row,boolean[] constraint,int column) {
         if (board[row][column] != NO_VALUE) {
             if (!constraint[board[row][column] - 1]) {
                 constraint[board[row][column] - 1] = true;

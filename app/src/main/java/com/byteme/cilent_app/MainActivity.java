@@ -109,10 +109,6 @@ public class MainActivity extends AppCompatActivity  implements View.OnClickList
                 startActivityForResult(i,Sudoku_End_GAME);
                 break;
             case R.id.loadGame:
-//                checkBoardSaves();
-
-//                i.putExtra(currentGameTAG, currentGame);
-//                i.putExtra(startingGameTAG, startingGame);
                 i.putExtra(newGameTag, false);
                 startActivityForResult(i,Sudoku_End_GAME);
                 break;
@@ -126,7 +122,6 @@ public class MainActivity extends AppCompatActivity  implements View.OnClickList
 
     private void toastWithDetails(boolean success) {
         if (success) {
-            // user has successfully either signed-in or signed-up
             String userDetails = "Hi, your display name is:  " + FirebaseAuth.getInstance().getCurrentUser().getDisplayName()
                     + " id: " + FirebaseAuth.getInstance().getCurrentUser().getUid();
             Toast.makeText(this, userDetails, Toast.LENGTH_SHORT).show();
