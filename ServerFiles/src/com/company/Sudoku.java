@@ -83,12 +83,13 @@ public class Sudoku {
                 if (board[row][col] != NO_VALUE && !res.contains(new Inedx(row,col))){
                     for (int i = 0; i < BOARD_SIZE; i++) {
                         if(((SUBSECTION_SIZE * (row / SUBSECTION_SIZE) + i / SUBSECTION_SIZE != row) && (SUBSECTION_SIZE * (col / SUBSECTION_SIZE) + i % SUBSECTION_SIZE!= col)) && board[SUBSECTION_SIZE * (row / SUBSECTION_SIZE) + i / SUBSECTION_SIZE][ SUBSECTION_SIZE * (col / SUBSECTION_SIZE) + i % SUBSECTION_SIZE] == board[row][col]){
+                            //ck if can remove set from code
                             if(!set.containsKey(board[row][col])){
                                 set.put(board[row][col],new Index(row,col));
-                                if (!res.contains(new Index(row,col)))
+                                if (!res.contains(new Index(row+1,col+1)))
                                     res.add(new Index(row+1,col+1));
                             }
-                            if (!res.contains(new Index(SUBSECTION_SIZE * (row / SUBSECTION_SIZE) + i / SUBSECTION_SIZE,SUBSECTION_SIZE * (col / SUBSECTION_SIZE) + i % SUBSECTION_SIZE)))
+                            if (!res.contains(new Index(SUBSECTION_SIZE * (row / SUBSECTION_SIZE) + i / SUBSECTION_SIZE + 1,SUBSECTION_SIZE * (col / SUBSECTION_SIZE) + i % SUBSECTION_SIZE)+1))
                                 res.add(new Index((SUBSECTION_SIZE * (row / SUBSECTION_SIZE) + i / SUBSECTION_SIZE)+1,(SUBSECTION_SIZE * (col / SUBSECTION_SIZE) + i % SUBSECTION_SIZE)+1));
 
                         }
@@ -161,20 +162,20 @@ public class Sudoku {
 
     public void generateNewBoard(Difficulty difficulty) {
         Random rand = new Random();
-        int[] randRow = new int[BOARD_SIZE];
+        int[] randCol = new int[BOARD_SIZE];
         ArrayList<Integer> numbers = new ArrayList<>();
         for (int i = 0; i < BOARD_SIZE; i++) {
             numbers.add(i+1);
         }
 
         for (int i = 0; i < BOARD_SIZE; i++) {
-            randRow[i] = numbers.remove(rand.nextInt(numbers.size()));
+            randCol[i] = numbers.remove(rand.nextInt(numbers.size()));
         }
 
-        int randIndex = rand.nextInt(BOARD_SIZE);
+        int randColIndex = rand.nextInt(BOARD_SIZE);
         for (int row = 0; row < BOARD_SIZE; row++) {
             this.board[row] = new int[BOARD_SIZE];
-            this.board[row][randIndex] = randRow[row];
+            this.board[row][randColIndex] = randCol[row];
             }
 
         solve(board);
@@ -184,13 +185,7 @@ public class Sudoku {
     }
 
     private void removeNumbers(Difficulty difficulty) {
-        ArrayList<ArrayList<Integer>> boardlist = new ArrayList<ArrayList<Integer>>();
-        for (int row = 0; row < BOARD_SIZE; row++) {
-            boardlist.add(new ArrayList<>());
-            for (int cell = 0; cell < BOARD_SIZE;cell++){
-                boardlist.get(row).add(cell);
-            }
-        }
+
         int number;
         Random rand = new Random();
         switch (difficulty){
@@ -209,18 +204,18 @@ public class Sudoku {
         }
 
         for (int i = 0; i < number; i++) {
-            removeNumber(boardlist);
+            removeNumber();
         }
     }
 
-    private void removeNumber( ArrayList<ArrayList<Integer>> boardlist) {
+    private void removeNumber() {
 
         Random rand = new Random();
         int row = rand.nextInt(BOARD_SIZE);
-        int cell = rand.nextInt(boardlist.get(row).size());
+        int cell = rand.nextInt(BOARD_SIZE);
 
         if (board[row][cell] == NO_VALUE){
-            removeNumber(boardlist);
+            removeNumber();
         }else {
             board[row][cell] = NO_VALUE;
         }
