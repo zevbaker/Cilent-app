@@ -22,18 +22,6 @@ public class Sudoku {
         completed = false;
     }
 
-    public Sudoku(int[][] board) {
-        this.board = board;
-    }
-
-    public int[][] getBoard() {
-        return board;
-    }
-
-    public void setBoard(int[][] board) {
-        this.board = board;
-    }
-
     public static Sudoku GetInstance(String board){
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
         return gson.fromJson(board, Sudoku.class);
@@ -45,20 +33,20 @@ public class Sudoku {
 
     public String[] checkBoard(){
 
-        ArrayList<Index> duplicatIndexs = new ArrayList<>();
+        ArrayList<Index> duplicateIndex = new ArrayList<>();
 
-        valid_row(board,duplicatIndexs);
-        valid_col(board,duplicatIndexs);
-        valid_squares(board,duplicatIndexs);
+        valid_row(board,duplicateIndex);
+        valid_col(board,duplicateIndex);
+        valid_squares(board,duplicateIndex);
 
-        String[] res = new String[duplicatIndexs.size()];
+        String[] res = new String[duplicateIndex.size()];
 
-        if(duplicatIndexs.size()==0){
+        if(duplicateIndex.size()==0){
             completed = check_empty_cells();
         }
 
-        for (int i = 0; i < duplicatIndexs.size(); i++) {
-            res[i] = duplicatIndexs.get(i).send();
+        for (int i = 0; i < duplicateIndex.size(); i++) {
+            res[i] = duplicateIndex.get(i).send();
         }
 
         return res;
@@ -80,16 +68,14 @@ public class Sudoku {
             for (int col = 0; col < BOARD_SIZE; col++) {
                 HashMap<Integer,Index>set = new HashMap<>();
                 //todo ck that this works
-                if (board[row][col] != NO_VALUE && !res.contains(new Inedx(row,col))){
+                if (board[row][col] != NO_VALUE && !res.contains(new Index(row,col))){
                     for (int i = 0; i < BOARD_SIZE; i++) {
                         if(((SUBSECTION_SIZE * (row / SUBSECTION_SIZE) + i / SUBSECTION_SIZE != row) && (SUBSECTION_SIZE * (col / SUBSECTION_SIZE) + i % SUBSECTION_SIZE!= col)) && board[SUBSECTION_SIZE * (row / SUBSECTION_SIZE) + i / SUBSECTION_SIZE][ SUBSECTION_SIZE * (col / SUBSECTION_SIZE) + i % SUBSECTION_SIZE] == board[row][col]){
-                            //ck if can remove set from code
-                            if(!set.containsKey(board[row][col])){
-                                set.put(board[row][col],new Index(row,col));
-                                if (!res.contains(new Index(row+1,col+1)))
-                                    res.add(new Index(row+1,col+1));
-                            }
-                            if (!res.contains(new Index(SUBSECTION_SIZE * (row / SUBSECTION_SIZE) + i / SUBSECTION_SIZE + 1,SUBSECTION_SIZE * (col / SUBSECTION_SIZE) + i % SUBSECTION_SIZE)+1))
+
+                            if (!res.contains(new Index(row+1,col+1)))
+                                res.add(new Index(row+1,col+1));
+
+                            if (!res.contains(new Index(SUBSECTION_SIZE * (row / SUBSECTION_SIZE) + i / SUBSECTION_SIZE + 1,SUBSECTION_SIZE * (col / SUBSECTION_SIZE) + i % SUBSECTION_SIZE+1)))
                                 res.add(new Index((SUBSECTION_SIZE * (row / SUBSECTION_SIZE) + i / SUBSECTION_SIZE)+1,(SUBSECTION_SIZE * (col / SUBSECTION_SIZE) + i % SUBSECTION_SIZE)+1));
 
                         }
@@ -109,7 +95,9 @@ public class Sudoku {
             for (int i = 0; i < temp.length; i++) {
                 if (temp[i] != NO_VALUE){
                     if (set.containsKey(temp[i])){
-                        res.add(new Index(row+1,i+1));
+                        if (!res.contains(new Index(row+1,i+1))){
+                            res.add(new Index(row+1,i+1));
+                        }
 
                         if (!res.contains(set.get(temp[i]))){
                             res.add(set.get(temp[i]));
@@ -130,7 +118,9 @@ public class Sudoku {
             for (int i =0 ; i< BOARD_SIZE; i++) {
                 if (grid[i][col] != NO_VALUE){
                     if (set.containsKey(grid[i][col])){
-                        res.add(new Index(i+1,col+1));
+                        if (!res.contains(new Index(i+1,col+1))){
+                            res.add(new Index(i+1,col+1));
+                        }
 
                         if (!res.contains(set.get(grid[i][col]))){
                             res.add( set.get(grid[i][col]));
@@ -176,7 +166,7 @@ public class Sudoku {
         for (int row = 0; row < BOARD_SIZE; row++) {
             this.board[row] = new int[BOARD_SIZE];
             this.board[row][randColIndex] = randCol[row];
-            }
+        }
 
         solve(board);
         printBoard();

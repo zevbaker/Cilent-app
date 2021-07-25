@@ -14,22 +14,6 @@ public class Index {
         this.cell = cell;
     }
 
-    public int getRow() {
-        return row;
-    }
-
-    public void setRow(int row) {
-        this.row = row;
-    }
-
-    public int getCell() {
-        return cell;
-    }
-
-    public void setCell(int cell) {
-        this.cell = cell;
-    }
-
     public String send() {
         Gson gson = new GsonBuilder().create();
         return gson.toJson(this);

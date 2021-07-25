@@ -7,11 +7,7 @@ import java.util.Random;
 
 public class SudokuIHandler implements IHandler {
     private volatile boolean doWork = true;
-
-    @Override
-    public void resetMembers() {
-        this.doWork = true;
-    }
+    
 
     @Override
     public void handle(InputStream fromClient, OutputStream toClient) throws IOException, ClassNotFoundException {

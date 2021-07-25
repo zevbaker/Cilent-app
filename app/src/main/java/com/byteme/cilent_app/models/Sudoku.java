@@ -5,12 +5,6 @@ import com.google.gson.GsonBuilder;
 
 
 public class Sudoku {
-    private static final int BOARD_START_INDEX = 0;
-    private static final int BOARD_SIZE = 9;
-    private static final int MIN_VALUE = 1;
-    private static final int MAX_VALUE = 9;
-    private static final int NO_VALUE = 0;
-    private static final int SUBSECTION_SIZE = 3;
     private int[][] board;
     boolean completed;
 
@@ -20,17 +14,8 @@ public class Sudoku {
         completed = false;
     }
 
-
-    public Sudoku(int[][] board){
-        this.board = board;
-    }
-
     public int[][] getBoard() {
         return board;
-    }
-
-    public void setBoard(int[][] board) {
-        this.board = board;
     }
 
     public void updateBoard(int row, int cell,int val) {
