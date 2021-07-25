@@ -7,7 +7,7 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.stream.IntStream;
 
-public class Sudoku implements Serializable {
+public class Sudoku {
     private static final int BOARD_START_INDEX = 0;
     private static final int BOARD_SIZE = 9;
     private static final int MIN_VALUE = 1;
@@ -45,9 +45,7 @@ public class Sudoku implements Serializable {
 
     public String[] checkBoard(){
 
-
         ArrayList<Index> duplicatIndexs = new ArrayList<>();
-
 
         valid_row(board,duplicatIndexs);
         valid_col(board,duplicatIndexs);
@@ -81,7 +79,8 @@ public class Sudoku implements Serializable {
         for (int row = 0; row < BOARD_SIZE; row++) {
             for (int col = 0; col < BOARD_SIZE; col++) {
                 HashMap<Integer,Index>set = new HashMap<>();
-                if (board[row][col] != NO_VALUE){
+                //todo ck that this works
+                if (board[row][col] != NO_VALUE && !res.contains(new Inedx(row,col))){
                     for (int i = 0; i < BOARD_SIZE; i++) {
                         if(((SUBSECTION_SIZE * (row / SUBSECTION_SIZE) + i / SUBSECTION_SIZE != row) && (SUBSECTION_SIZE * (col / SUBSECTION_SIZE) + i % SUBSECTION_SIZE!= col)) && board[SUBSECTION_SIZE * (row / SUBSECTION_SIZE) + i / SUBSECTION_SIZE][ SUBSECTION_SIZE * (col / SUBSECTION_SIZE) + i % SUBSECTION_SIZE] == board[row][col]){
                             if(!set.containsKey(board[row][col])){
