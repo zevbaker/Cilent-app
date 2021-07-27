@@ -38,13 +38,13 @@ public class SudokuIHandler implements IHandler {
 
                     System.out.println("server cking Sudoku: ");
 
-                    String[] probIndexs = board.checkBoard();
+                    String[] res = board.checkBoard();
                     if(board.isCompleted()){
                         objectOutputStream.writeObject("EndGame");
                     }
 
                     objectOutputStream.writeObject("index");
-                    objectOutputStream.writeObject(probIndexs);
+                    objectOutputStream.writeObject(res);
                     break;
                 }
 

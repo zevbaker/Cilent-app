@@ -67,10 +67,15 @@ public class Sudoku {
         for (int row = 0; row < BOARD_SIZE; row++) {
             for (int col = 0; col < BOARD_SIZE; col++) {
                 HashMap<Integer,Index>set = new HashMap<>();
-                //todo ck that this works
-                if (board[row][col] != NO_VALUE && !res.contains(new Index(row,col))){
+                if (board[row][col] != NO_VALUE){
                     for (int i = 0; i < BOARD_SIZE; i++) {
                         if(((SUBSECTION_SIZE * (row / SUBSECTION_SIZE) + i / SUBSECTION_SIZE != row) && (SUBSECTION_SIZE * (col / SUBSECTION_SIZE) + i % SUBSECTION_SIZE!= col)) && board[SUBSECTION_SIZE * (row / SUBSECTION_SIZE) + i / SUBSECTION_SIZE][ SUBSECTION_SIZE * (col / SUBSECTION_SIZE) + i % SUBSECTION_SIZE] == board[row][col]){
+                            if(!set.containsKey(board[row][col])){
+                                set.put(board[row][col],new Index(row,col));
+                                if (!res.contains(new Index(row,col)))
+                                    res.add(new Index(row+1,col+1));
+                            }
+                            if (!res.contains(new Index(SUBSECTION_SIZE * (row / SUBSECTION_SIZE) + i / SUBSECTION_SIZE,SUBSECTION_SIZE * (col / SUBSECTION_SIZE) + i % SUBSECTION_SIZE)))
 
                             if (!res.contains(new Index(row+1,col+1)))
                                 res.add(new Index(row+1,col+1));
