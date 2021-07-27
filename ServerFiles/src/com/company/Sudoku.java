@@ -70,12 +70,6 @@ public class Sudoku {
                 if (board[row][col] != NO_VALUE){
                     for (int i = 0; i < BOARD_SIZE; i++) {
                         if(((SUBSECTION_SIZE * (row / SUBSECTION_SIZE) + i / SUBSECTION_SIZE != row) && (SUBSECTION_SIZE * (col / SUBSECTION_SIZE) + i % SUBSECTION_SIZE!= col)) && board[SUBSECTION_SIZE * (row / SUBSECTION_SIZE) + i / SUBSECTION_SIZE][ SUBSECTION_SIZE * (col / SUBSECTION_SIZE) + i % SUBSECTION_SIZE] == board[row][col]){
-                            if(!set.containsKey(board[row][col])){
-                                set.put(board[row][col],new Index(row,col));
-                                if (!res.contains(new Index(row,col)))
-                                    res.add(new Index(row+1,col+1));
-                            }
-                            if (!res.contains(new Index(SUBSECTION_SIZE * (row / SUBSECTION_SIZE) + i / SUBSECTION_SIZE,SUBSECTION_SIZE * (col / SUBSECTION_SIZE) + i % SUBSECTION_SIZE)))
 
                             if (!res.contains(new Index(row+1,col+1)))
                                 res.add(new Index(row+1,col+1));
