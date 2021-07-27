@@ -5,6 +5,8 @@ import com.google.gson.GsonBuilder;
 
 import java.util.Objects;
 
+// represents a position on the boardgame
+
 public class Index {
     private int row;
     private int cell;

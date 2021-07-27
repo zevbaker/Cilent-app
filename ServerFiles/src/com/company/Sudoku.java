@@ -7,7 +7,7 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.stream.IntStream;
 
-public class Sudoku {
+public class Sudoku implements Serializable {
     private static final int BOARD_START_INDEX = 0;
     private static final int BOARD_SIZE = 9;
     private static final int MIN_VALUE = 1;
@@ -45,7 +45,9 @@ public class Sudoku {
 
     public String[] checkBoard(){
 
+
         ArrayList<Index> duplicatIndexs = new ArrayList<>();
+
 
         valid_row(board,duplicatIndexs);
         valid_col(board,duplicatIndexs);
@@ -79,17 +81,15 @@ public class Sudoku {
         for (int row = 0; row < BOARD_SIZE; row++) {
             for (int col = 0; col < BOARD_SIZE; col++) {
                 HashMap<Integer,Index>set = new HashMap<>();
-                //todo ck that this works
-                if (board[row][col] != NO_VALUE && !res.contains(new Inedx(row,col))){
+                if (board[row][col] != NO_VALUE){
                     for (int i = 0; i < BOARD_SIZE; i++) {
                         if(((SUBSECTION_SIZE * (row / SUBSECTION_SIZE) + i / SUBSECTION_SIZE != row) && (SUBSECTION_SIZE * (col / SUBSECTION_SIZE) + i % SUBSECTION_SIZE!= col)) && board[SUBSECTION_SIZE * (row / SUBSECTION_SIZE) + i / SUBSECTION_SIZE][ SUBSECTION_SIZE * (col / SUBSECTION_SIZE) + i % SUBSECTION_SIZE] == board[row][col]){
-                            //ck if can remove set from code
                             if(!set.containsKey(board[row][col])){
                                 set.put(board[row][col],new Index(row,col));
-                                if (!res.contains(new Index(row+1,col+1)))
+                                if (!res.contains(new Index(row,col)))
                                     res.add(new Index(row+1,col+1));
                             }
-                            if (!res.contains(new Index(SUBSECTION_SIZE * (row / SUBSECTION_SIZE) + i / SUBSECTION_SIZE + 1,SUBSECTION_SIZE * (col / SUBSECTION_SIZE) + i % SUBSECTION_SIZE)+1))
+                            if (!res.contains(new Index(SUBSECTION_SIZE * (row / SUBSECTION_SIZE) + i / SUBSECTION_SIZE,SUBSECTION_SIZE * (col / SUBSECTION_SIZE) + i % SUBSECTION_SIZE)))
                                 res.add(new Index((SUBSECTION_SIZE * (row / SUBSECTION_SIZE) + i / SUBSECTION_SIZE)+1,(SUBSECTION_SIZE * (col / SUBSECTION_SIZE) + i % SUBSECTION_SIZE)+1));
 
                         }
@@ -162,20 +162,20 @@ public class Sudoku {
 
     public void generateNewBoard(Difficulty difficulty) {
         Random rand = new Random();
-        int[] randCol = new int[BOARD_SIZE];
+        int[] randRow = new int[BOARD_SIZE];
         ArrayList<Integer> numbers = new ArrayList<>();
         for (int i = 0; i < BOARD_SIZE; i++) {
             numbers.add(i+1);
         }
 
         for (int i = 0; i < BOARD_SIZE; i++) {
-            randCol[i] = numbers.remove(rand.nextInt(numbers.size()));
+            randRow[i] = numbers.remove(rand.nextInt(numbers.size()));
         }
 
-        int randColIndex = rand.nextInt(BOARD_SIZE);
+        int randIndex = rand.nextInt(BOARD_SIZE);
         for (int row = 0; row < BOARD_SIZE; row++) {
             this.board[row] = new int[BOARD_SIZE];
-            this.board[row][randColIndex] = randCol[row];
+            this.board[row][randIndex] = randRow[row];
             }
 
         solve(board);
@@ -185,7 +185,13 @@ public class Sudoku {
     }
 
     private void removeNumbers(Difficulty difficulty) {
-
+        ArrayList<ArrayList<Integer>> boardlist = new ArrayList<ArrayList<Integer>>();
+        for (int row = 0; row < BOARD_SIZE; row++) {
+            boardlist.add(new ArrayList<>());
+            for (int cell = 0; cell < BOARD_SIZE;cell++){
+                boardlist.get(row).add(cell);
+            }
+        }
         int number;
         Random rand = new Random();
         switch (difficulty){
@@ -204,18 +210,18 @@ public class Sudoku {
         }
 
         for (int i = 0; i < number; i++) {
-            removeNumber();
+            removeNumber(boardlist);
         }
     }
 
-    private void removeNumber() {
+    private void removeNumber( ArrayList<ArrayList<Integer>> boardlist) {
 
         Random rand = new Random();
         int row = rand.nextInt(BOARD_SIZE);
-        int cell = rand.nextInt(BOARD_SIZE);
+        int cell = rand.nextInt(boardlist.get(row).size());
 
         if (board[row][cell] == NO_VALUE){
-            removeNumber();
+            removeNumber(boardlist);
         }else {
             board[row][cell] = NO_VALUE;
         }
